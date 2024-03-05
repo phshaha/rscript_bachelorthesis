@@ -55,7 +55,7 @@ bachelorthesis/
 │   └── px-x-1405000000_101.px (FSO data)
 │
 ├── script/
-│   └── analysis_script.R
+│   └── scriptfile_bachelorthesis.R
 │   
 ├── LICENSE.md
 └── README.md
