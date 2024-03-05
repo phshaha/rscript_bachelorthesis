@@ -47,15 +47,18 @@ To run the R script:
 
 ## Folder Structure
 
-/bachelorthesis
-|-- /data
-|   |-- /Data_STATA
-|       |-- [List of STATA data files]
-|   |-- /px-x-1405000000_101.px
-|-- /script
-|   |-- scriptfile_bachelor_thesis.R
-|-- README.md
-|-- LICENSE.md
+bachelorthesis/
+│
+├── data/
+│   ├── DATA_STATA/
+│   │   └── [List of STATA data files] (SHP data)
+│   └── px-x-1405000000_101.px (FSO data)
+│
+├── script/
+│   └── analysis_script.R
+│   
+├── LICENSE.md
+└── README.md
 
 ## License
 
