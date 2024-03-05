@@ -1,6 +1,6 @@
 ################################################################################
 ##           Scriptfile for the Bachelor thesis of Philipp Shaha:             ##       
-##           overweight and the consumption of medical services               ##
+##                   Obesity and Health Care Utilisation                      ##
 ################################################################################
 
 ################################################################################
@@ -13,15 +13,9 @@ library(dplyr)
 library(ggplot2)
 library(tidyverse)
 library(haven)
-library(labelled)
-library(data.table)
-library(stringr)
 library(estimatr)
 library(car)
 library(xtable)
-library(stargazer)
-library(fixest)
-library(ivreg)
 library(fastDummies)
 library(texreg)
 library(ggdag)
@@ -30,7 +24,7 @@ library(ggtext)
 library(pxR)
 
 # Set working directory:
-setwd("C:/Users/phili/OneDrive/Desktop/Bachelor thesis/swissubase_932_13_0/Data_STATA/Data_STATA/SHP-Data-W1-W23-STATA")
+setwd("C:/Users/phili/OneDrive/Desktop/bachelorthesis/data/Data_STATA/Data_STATA/SHP-Data-W1-W23-STATA")
 
 # Import SHP dataset from the years between 2004 and 2019:
 shp04_personal <- read_dta(file = 'W6_2004/shp04_p_user.dta')
@@ -67,7 +61,7 @@ shp19_personal <- read_dta(file = 'W21_2019/shp19_p_user.dta')
 shp19_household <- read_dta(file = 'W21_2019/shp19_h_user.dta')
 
 # Change working directory to read master dataset
-setwd("C:/Users/phili/OneDrive/Desktop/Bachelor thesis/swissubase_932_13_0/Data_STATA/Data_STATA/SHP-Data-WA-STATA")
+setwd("C:/Users/phili/OneDrive/Desktop/bachelorthesis/data/Data_STATA/Data_STATA/SHP-Data-WA-STATA")
 shp_master_individual <- read_dta(file = "shp_mp.dta")
 shp_master_household <- read_dta(file = "shp_mh.dta")
 
@@ -657,8 +651,6 @@ summary(hospitalisations_iv_5_exclusion)
 ################################################################################
 ##                             Code for the DAGs                              ##
 ################################################################################
-# Change the working directory
-setwd("C:/Users/phili/OneDrive/Desktop/Bachelor thesis")
 
 ############################# DAG without the IV ###############################
 # Specify the coordinates of the nodes
