@@ -46,7 +46,7 @@ To run the R script:
 4. Execute the R script in your preferred R environment.
 
 ## Folder Structure
-
+```
 bachelorthesis/
 │
 ├── data/
@@ -59,7 +59,7 @@ bachelorthesis/
 │   
 ├── LICENSE.md
 └── README.md
-
+```
 ## License
 
 This project is licensed under the MIT License. See the LICENSE.md file for details.
