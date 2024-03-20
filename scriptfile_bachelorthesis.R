@@ -7,7 +7,7 @@
 #                 Preparatory work to obtain the final dataset                 #
 ################################################################################
 
-# Load the necessary packages:
+# Load the necessary packages
 library(magrittr)
 library(dplyr)
 library(ggplot2)
@@ -23,10 +23,10 @@ library(dagitty)
 library(ggtext)
 library(pxR)
 
-# Set working directory:
+# Set working directory
 setwd("C:/Users/phili/OneDrive/Desktop/bachelorthesis/data/Data_STATA/Data_STATA/SHP-Data-W1-W23-STATA")
 
-# Import SHP dataset from the years between 2004 and 2019:
+# Import SHP data sets from the years between 2004 and 2019:
 shp04_personal <- read_dta(file = 'W6_2004/shp04_p_user.dta')
 shp04_household <- read_dta(file = 'W6_2004/shp04_h_user.dta')
 shp05_personal <- read_dta(file = 'W7_2005/shp05_p_user.dta')
@@ -60,22 +60,22 @@ shp18_household <- read_dta(file = 'W20_2018/shp18_h_user.dta')
 shp19_personal <- read_dta(file = 'W21_2019/shp19_p_user.dta')
 shp19_household <- read_dta(file = 'W21_2019/shp19_h_user.dta')
 
-# Change working directory to read master dataset
+# Change working directory to read master data set
 setwd("C:/Users/phili/OneDrive/Desktop/bachelorthesis/data/Data_STATA/Data_STATA/SHP-Data-WA-STATA")
 shp_master_individual <- read_dta(file = "shp_mp.dta")
 shp_master_household <- read_dta(file = "shp_mh.dta")
 
-## Obtain information on the BMI of relatives and merge all datasets: 
+## Obtain information on the BMI of relatives and merge all data sets: 
 years <- list("04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19")
 
 for (year in years) {
-  # Load yearly dataset
+  # Load yearly data set
   yearly_data <- get(paste0("shp", year, "_personal"))
   
-  # Merge with yearly dataset for fathers
+  # Merge with yearly data set for fathers
   merged_data <- merge(shp_master_individual, yearly_data[c("idpers", paste0("p", year, "c45"), paste0("p", year, "c46"))], by.x = "idfath__", by.y = "idpers")
   
-  # Merge with yearly dataset for mothers
+  # Merge with yearly data set for mothers
   merged_data <- merge(merged_data, yearly_data[c("idpers", paste0("p", year, "c45"), paste0("p", year, "c46"))], by.x = "idmoth__", by.y = "idpers")
   
   # Rename columns
@@ -105,18 +105,18 @@ for (year in years) {
   assign(paste0("merged_20", year), merged_year, envir = .GlobalEnv)
 }
 
-# Add year dummies to the datasets using a for loop: 
+# Add year dummies to the data sets using a for loop: 
 for (year in 2004:2019) {
   dataset_name <- paste0("merged_", year)
   
   # Create a vector with the year values
   year_vector <- rep(year, nrow(get(dataset_name)))
   
-  # Assign the year dummy column to the dataset
+  # Assign the year dummy column to the data set
   assign(dataset_name, cbind(get(dataset_name), year_dummy = year_vector), envir = .GlobalEnv)
 }
 
-# Write a function to obtain datasets that require less memory storage by reducing the dataset on the variables needed
+# Write a function to obtain data sets that require less memory storage by reducing the dataset on the variables needed
 
 # Relevant variables are: 
 # ID of person = idpers
@@ -144,7 +144,7 @@ for (year in 2004:2019) {
 extract_relevant_columns <- function(changeable_vars_list_type1, changeable_vars_list_type2, unchangeable_vars_list) {
   for (year in years) {
     
-    # Get the dataset
+    # Get the data set
     dataset_name <- paste0("merged_20", year)
     dataset <- get(dataset_name)
     
@@ -247,7 +247,7 @@ for (year in 2004:2019) {
   current_df <- current_df %>%
     mutate(swiss = ifelse(nat1 == 8100|nat1 == 8100|nat3 == 8100, 1, 0)) %>% 
     select(-nat1, -nat2, -nat3)
-  # Store the result in the local environment
+  # Store the result in the global environment
   assign(paste0("extracted_merged_", year), current_df, envir = .GlobalEnv)
 }
 
@@ -378,22 +378,22 @@ bmi_plot_m_f <- combined_data %>%
   geom_density(alpha = 0.5) +
   geom_vline(xintercept = c(18.5, 25, 30), color = "black", linetype = "dashed") + 
   labs(title = "Distribution of BMI by gender",
-       caption = "Source: Swiss Household Panel (SHP). N = 7,420.",
        x = "BMI",
        y = "Density") +
   theme_minimal() +
   annotate("text", # Set labels
            x = c(12, 19, 25.5, 30.5),
            y = c(0.167, 0.167, 0.167, 0.167),  
-           label = c("Underweight", "Normalweight", "Overweight", "Obese"), 
+           label = c("Underweight", "Normal weight", "Overweight", "Obese"), 
            color = "black",
-           size = 2,
+           size = 1.8,
            hjust = 0,
            vjust = 0,
            angle = 0
   ) +
   scale_fill_manual(values = c("0" = "#003f5c", "1" = "#bc5090"), labels = c("Male", "Female")) +  # Adjust colors 
   guides(fill = guide_legend(title = NULL)) + # Remove legend title
+  theme(legend.text = element_text(size = 7)) + # Adjust legend text size
   coord_cartesian(ylim = c(0, 0.168)) # Set y-axis limits
 bmi_plot_m_f
 ggsave("bmi_m_f.png", plot = bmi_plot_m_f, width = 6, height = 4, dpi = 300)
@@ -407,32 +407,32 @@ percentage_summary <- prop.table(counts, margin = 1) * 100
 # Print the summary
 print(percentage_summary)
 
-# Exclude observations with BMI > 60 from the dataset (above 40 is already class 3 obesity)
+# Exclude observations with BMI > 60 from the data set (above 40 is already class 3 obesity)
 combined_data <- combined_data %>% filter(BMI <= 60)
 
 # Create the combined kernel density plot for children and their parents regarding BMI
 bmi_plot_c_p <- ggplot(combined_data, aes(x = BMI)) +
-  geom_density(aes(fill = "BMI"), alpha = 0.5, color = "black") +
-  geom_density(aes(x = mean_bmi_parents, fill = "Parents BMI"), alpha = 0.5) +
-  labs(title = "Distribution of BMI and parental BMI",
-       caption = "Source: Swiss Household Panel (SHP). N = 7,420.",
+  geom_density(aes(fill = "Children's BMI"), alpha = 0.5, color = "black") +
+  geom_density(aes(x = mean_bmi_parents, fill = "Mean parental BMI"), alpha = 0.5) +
+  labs(title = "Distribution of children's BMI and parental BMI",
        x = "BMI",
        y = "Density") +
-  scale_fill_manual(values = c("BMI" = "#6aa84f", "Parents BMI" = "#f1c232")) +
+  scale_fill_manual(values = c("Children's BMI" = "#6aa84f", "Mean parental BMI" = "#f1c232")) +
   geom_vline(xintercept = c(18.5, 25, 30), color = "black", linetype = "dashed") +
   annotate("text", # Set labels
            x = c(12, 19, 25.5, 30.5),
            y = c(0.167, 0.167, 0.167, 0.167),  
-           label = c("Underweight", "Normalweight", "Overweight", "Obese"),
+           label = c("Underweight", "Normal weight", "Overweight", "Obese"),
            color = "black",
-           size = 2,
+           size = 1.8,
            hjust = 0,
            vjust = 0,
            angle = 0
   ) +
   theme_minimal() +
   coord_cartesian(ylim = c(0, 0.168)) + # Set y-axis limits
-  guides(fill = guide_legend(title = NULL)) # Remove the legend title
+  guides(fill = guide_legend(title = NULL)) + # Remove the legend title
+  theme(legend.text = element_text(size = 7)) # Adjust legend text size
 bmi_plot_c_p
 ggsave("bmi_c_p.png", plot = bmi_plot_c_p, width = 6, height = 4, dpi = 300)
 
@@ -447,9 +447,9 @@ physician_visits_plot <- combined_data %>% filter(physician_visits <= quantile(p
   ggplot(aes(x = physician_visits)) +
   geom_histogram(fill = "#4e79a7", color = "black", bins = 26) +
   labs(title = "Distribution of physician visits",
-       caption = expression("Source: Swiss Household Panel (SHP). " * italic("n"[P]) * " = 7,351."),
        x = "Number of physician visits a year",
        y = "Frequency") +
+  scale_x_continuous(breaks = seq(0, 25, by = 5)) +
   theme_minimal()
 physician_visits_plot
 ggsave("physician_visits.png", plot = physician_visits_plot, width = 6, height = 4, dpi = 300)
@@ -462,15 +462,14 @@ mean(combined_data$physician_visits[combined_data$female == 1 & combined_data$ph
 # Visualize hospitalisations
 head(sort(combined_data$hospitalisations, decreasing = TRUE)) # Maximum of 177 -> exclude outliers
 
-# Compute N
+# Compute N for the graphic
 nrow(combined_data %>% filter(hospitalisations <= quantile(hospitalisations,0.99))) # Compute N
 
 # Create histogram for the number of days in hospitalisation
 hospitalisation_plot <- combined_data %>% filter(hospitalisations <= quantile(hospitalisations,0.99) & female == 1) %>% 
   ggplot(aes(x = hospitalisations)) +
-  geom_histogram(fill = "lightblue", color = "blue", bins = 10) +
+  geom_histogram(fill = "#4e79a7", color = "black", bins = 10) +
   labs(title = "Histogram of hospitalisations",
-       caption = expression("Source: Swiss Household Panel (SHP). " * italic("n"[H]) * " = 7,348."),
        x = "Number of days in hospital a year",
        y = "Frequency") +
   theme_minimal() +
@@ -527,8 +526,16 @@ print.xtable(table_object, file = "table_descr_stats.tex")
 #                             Regression analysis                              #
 ################################################################################
 
-############################ For physician visits ##############################
+# First stage results independent of the exclusion of outliers
+# Extract first stage results without control variables
+iv_first_stage_uncontrolled = lm_robust(BMI ~ mean_bmi_parents, fixed_effects = ~ canton + year, data = combined_data)
+summary(iv_first_stage_uncontrolled)
 
+# Extract first stage results with control variables 
+iv_first_stage = lm_robust(BMI ~ mean_bmi_parents + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + swiss + urban, fixed_effects = ~ canton + year, data = combined_data)
+summary(iv_first_stage)
+
+############################ For physician visits ##############################
 # IV estimation
 # Without control variables
 physician_visits_iv_uncontrolled <- iv_robust(physician_visits ~ BMI | mean_bmi_parents, data = combined_data %>% filter(physician_visits <= quantile(physician_visits, 0.99)), fixed_effects = ~ canton + year)
@@ -588,7 +595,7 @@ summary(physician_visits_iv_no_exclusion)
 physician_visits_iv_5_exclusion <- iv_robust(physician_visits ~ BMI + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + swiss + urban | mean_bmi_parents + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + swiss + urban, data = combined_data %>% filter(physician_visits <= quantile(physician_visits, 0.95)), fixed_effects = ~ canton + year)
 summary(physician_visits_iv_5_exclusion)
 
-############################ For hospitalizations ##############################
+############################ For hospitalisations ##############################
 # IV estimation
 # Without control variables
 hospitalisations_iv_uncontrolled <- iv_robust(hospitalisations ~ BMI | mean_bmi_parents, data = combined_data %>% filter(hospitalisations <= quantile(hospitalisations, 0.99)), fixed_effects = ~ canton + year)
@@ -600,7 +607,7 @@ summary(hospitalisations_iv_first_stage_uncontrolled)
 # With control variables
 hospitalisations_iv <- iv_robust(hospitalisations ~ BMI + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + swiss + urban | mean_bmi_parents + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + swiss + urban, data = combined_data %>% filter(hospitalisations <= quantile(hospitalisations, 0.99)), fixed_effects = ~ canton + year)
 summary(hospitalisations_iv)
-# Extract first stage results
+# Extract first stage results 
 hospitalisations_iv_first_stage = lm_robust(BMI ~ mean_bmi_parents + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + swiss + urban, fixed_effects = ~ canton + year, data = combined_data %>% filter(hospitalisations <= quantile(hospitalisations, 0.99)))
 summary(hospitalisations_iv_first_stage)
 
@@ -648,6 +655,32 @@ summary(hospitalisations_iv_no_exclusion)
 hospitalisations_iv_5_exclusion <- iv_robust(hospitalisations ~ BMI + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + swiss + urban | mean_bmi_parents + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + swiss + urban, data = combined_data %>% filter(hospitalisations <= quantile(hospitalisations, 0.95)), fixed_effects = ~ canton + year)
 summary(hospitalisations_iv_5_exclusion)
 
+####### Robustness check with different obesity definition for children ########
+min(combined_data$age) # Adjust BMI for individuals aged 13 and higher
+combined_data$BMI_adjusted <- combined_data$BMI # Create a new column in the data frame
+
+# For women
+combined_data$BMI_adjusted[combined_data$female == 1 & combined_data$age == 13] <- combined_data$BMI_adjusted[combined_data$female == 1 & combined_data$age == 13] * 0.813
+combined_data$BMI_adjusted[combined_data$female == 1 & combined_data$age == 14] <- combined_data$BMI_adjusted[combined_data$female == 1 & combined_data$age == 14] * 0.85
+combined_data$BMI_adjusted[combined_data$female == 1 & combined_data$age == 15] <- combined_data$BMI_adjusted[combined_data$female == 1 & combined_data$age == 15] * 0.877
+combined_data$BMI_adjusted[combined_data$female == 1 & combined_data$age == 16] <- combined_data$BMI_adjusted[combined_data$female == 1 & combined_data$age == 16] * 0.9
+combined_data$BMI_adjusted[combined_data$female == 1 & combined_data$age == 17] <- combined_data$BMI_adjusted[combined_data$female == 1 & combined_data$age == 17] * 0.913
+
+# For men
+combined_data$BMI_adjusted[combined_data$female == 0 & combined_data$age == 13] <- combined_data$BMI_adjusted[combined_data$female == 0 & combined_data$age == 13] * 0.77
+combined_data$BMI_adjusted[combined_data$female == 0 & combined_data$age == 14] <- combined_data$BMI_adjusted[combined_data$female == 0 & combined_data$age == 14] * 0.807
+combined_data$BMI_adjusted[combined_data$female == 0 & combined_data$age == 15] <- combined_data$BMI_adjusted[combined_data$female == 0 & combined_data$age == 15] * 0.84
+combined_data$BMI_adjusted[combined_data$female == 0 & combined_data$age == 16] <- combined_data$BMI_adjusted[combined_data$female == 0 & combined_data$age == 16] * 0.87
+combined_data$BMI_adjusted[combined_data$female == 0 & combined_data$age == 17] <- combined_data$BMI_adjusted[combined_data$female == 0 & combined_data$age == 17] * 0.897
+
+# With control variables
+physician_visits_iv_adjustedBMI <- iv_robust(physician_visits ~ BMI_adjusted + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + swiss + urban | mean_bmi_parents + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + swiss + urban, data = combined_data %>% filter(physician_visits <= quantile(physician_visits, 0.99)), fixed_effects = ~ canton + year)
+summary(physician_visits_iv_adjustedBMI)
+
+# With control variables
+hospitalisations_iv_adjustedBMI <- iv_robust(hospitalisations ~ BMI_adjusted + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + swiss + urban | mean_bmi_parents + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + swiss + urban, data = combined_data %>% filter(hospitalisations <= quantile(hospitalisations, 0.99)), fixed_effects = ~ canton + year)
+summary(hospitalisations_iv_adjustedBMI)
+
 ################################################################################
 ##                             Code for the DAGs                              ##
 ################################################################################
@@ -685,7 +718,7 @@ dag_wo_iv <- ggdag_status(dag_wo_iv,
                 label.padding = unit(c(0.25,0.25,0.25,0.25), "lines"), label.color = "black", color = "black") +
   geom_richtext(x=-2.05,y=-1.5,hjust=1,vjust=0.2,label="_**unobserved confounders**_<br>smoker<br>time preferences",size=3,
                 label.padding = unit(c(0.25,0.25,0.25,0.25), "lines"), label.color = "black", color = "black") +
-  geom_richtext(x=0,y=-1.5,hjust=0,vjust=0.9,label="_**observed confounders**_<br>gender<br>age<br>education<br>working status<br>civil status<br>activity<br>newborn child<br>sleeping problems<br>nationality<br>urbanity",size=3,
+  geom_richtext(x=0,y=-1.5,hjust=0,vjust=0.9,label="_**observed confounders**_<br>gender<br>age<br>education<br>working status<br>civil status<br>physical activity<br>newborn child<br>sleeping problems<br>nationality<br>degree of urbanisation",size=3,
                 label.padding = unit(c(0.25,0.25,0.25,0.25), "lines"), label.color = "black", color = "black") +
   geom_richtext(x=-1,y=1.5,hjust=1,vjust=0.2,label="_**comorbidities**_<br>chronic health problems<br>back pain<br>headache",size=3,
                 label.padding = unit(c(0.25,0.25,0.25,0.25), "lines"), label.color = "black", color = "black") +
@@ -731,11 +764,11 @@ dag_w_iv <- ggdag_status(dag_w_iv,
                 label.padding = unit(c(0.25,0.25,0.25,0.25), "lines"), label.color = "black", color = "black") +
   geom_richtext(x=-2.05,y=-1.5,hjust=0,vjust=1.1,label="_**unobserved confounders**_<br>smoker<br>time preferences",size=3,
                 label.padding = unit(c(0.25,0.25,0.25,0.25), "lines"), label.color = "black", color = "black") +
-  geom_richtext(x=0,y=-1.5,hjust=0,vjust=0.9,label="_**observed confounders**_<br>gender<br>age<br>education<br>working status<br>civil status<br>activity<br>newborn child<br>sleeping problems<br>nationality<br>urbanity",size=3,
+  geom_richtext(x=0,y=-1.5,hjust=0,vjust=0.9,label="_**observed confounders**_<br>gender<br>age<br>education<br>working status<br>civil status<br>physical activity<br>newborn child<br>sleeping problems<br>nationality<br>degree of urbanisation",size=3,
                 label.padding = unit(c(0.25,0.25,0.25,0.25), "lines"), label.color = "black", color = "black") +
   geom_richtext(x=-1,y=1.5,hjust=1,vjust=0.2,label="_**comorbidities**_<br>chronic health problems<br>back pain<br>headache",size=3,
                 label.padding = unit(c(0.25,0.25,0.25,0.25), "lines"), label.color = "black", color = "black") +
-  geom_richtext(x=-2.8,y=-1.5,hjust=1,vjust=0.5,label="BMI parents",size=3,
+  geom_richtext(x=-2.8,y=-1.5,hjust=1,vjust=0.5,label="mean BMI parents",size=3,
                 label.padding = unit(c(0.25,0.25,0.25,0.25), "lines"), label.color = "black", color = "black") +
   geom_richtext(x=0,y=1.5,hjust=0,vjust=0.5,label="genetic predisposition<br>for diseases",size=3,
                 label.padding = unit(c(0.25,0.25,0.25,0.25), "lines"), label.color = "black", color = "black") +
@@ -747,7 +780,7 @@ dag_w_iv <- ggdag_status(dag_w_iv,
 dag_w_iv
 
 ################################################################################
-##      Code for the FSO data on the cost of medical services in 2019         ##                      ##
+##      Code for the FSO data on the cost of medical services in 2019         ##                      
 ################################################################################
 
 # Load the data set
@@ -756,7 +789,7 @@ fso <- read.px("px-x-1405000000_101.px", encoding = NULL,
                               '":"'))
 
 # Convert it to a data frame
-bfs <- as.data.frame(fso)
+fso <- as.data.frame(fso)
 
 # Filter the total cost of hospitalisations for the year 2019
 filtered_hospitalisation_costs <- fso %>% filter(Jahr == 2019 & Leistungserbringer == "- P.1 Krankenhäuser" & Finanzierungsregime == "Finanzierungsregime - Total", Leistung == "Leistung - Total", Art.der.Leistungserbringung == "Art der Leistungserbringung - Total")
