@@ -233,7 +233,7 @@ for (year in 2004:2019) {
   current_df <- get(paste0("extracted_merged_", year))
   
   # Rename the variables
-  colnames(current_df) <- c("ID", "year", "mean_bmi_parents", "physician_visits", "hospitalisations", "height", "weight", 
+  colnames(current_df) <- c("ID", "year", "mean_BMI_parents", "physician_visits", "hospitalisations", "height", "weight", 
                             "activity_weekly", "sleep", "backpain", "headache", "chronic", "sex", "age", "edu",
                             "wstat", "urban", "canton", "newborn", "civsta", "nat1", "nat2", "nat3")
   
@@ -413,7 +413,7 @@ combined_data <- combined_data %>% filter(BMI <= 60)
 # Create the combined kernel density plot for children and their parents regarding BMI
 bmi_plot_c_p <- ggplot(combined_data, aes(x = BMI)) +
   geom_density(aes(fill = "Children's BMI"), alpha = 0.5, color = "black") +
-  geom_density(aes(x = mean_bmi_parents, fill = "Mean parental BMI"), alpha = 0.5) +
+  geom_density(aes(x = mean_BMI_parents, fill = "Mean parental BMI"), alpha = 0.5) +
   labs(title = "Distribution of children's BMI and parental BMI",
        x = "BMI",
        y = "Density") +
@@ -445,7 +445,7 @@ nrow(combined_data %>% filter(physician_visits <= quantile(physician_visits,0.99
 # Create histogram for the number of physician visits
 physician_visits_plot <- combined_data %>% filter(physician_visits <= quantile(physician_visits,0.99)) %>% 
   ggplot(aes(x = physician_visits)) +
-  geom_histogram(fill = "#4e79a7", color = "black", bins = 26) +
+  geom_histogram(fill = "#4e79a7", color = "black", bins = 26, alpha = 0.5) +
   labs(title = "Distribution of physician visits",
        x = "Number of physician visits a year",
        y = "Frequency") +
@@ -468,7 +468,7 @@ nrow(combined_data %>% filter(hospitalisations <= quantile(hospitalisations,0.99
 # Create histogram for the number of days in hospitalisation
 hospitalisation_plot <- combined_data %>% filter(hospitalisations <= quantile(hospitalisations,0.99) & female == 1) %>% 
   ggplot(aes(x = hospitalisations)) +
-  geom_histogram(fill = "#4e79a7", color = "black", bins = 10) +
+  geom_histogram(fill = "#4e79a7", color = "black", bins = 10, alpha = 0.5) +
   labs(title = "Histogram of hospitalisations",
        x = "Number of days in hospital a year",
        y = "Frequency") +
@@ -505,7 +505,7 @@ combined_data$hospitalisations_99 <- ifelse(combined_data$hospitalisations <= to
 combined_data <- fastDummies::dummy_cols(combined_data, select_columns = c("wstat", "civsta", "urban"))
 
 # Specify the relevant columns
-columns_to_summarize <- c("BMI", "physician_visits_99", "hospitalisations_99", "mean_bmi_parents", "female", "age", "edu", "wstat_employed", "wstat_unemployed", "wstat_nonworking", "civsta_single", "civsta_married", "civsta_separated", "activity_weekly", "newborn", "sleep", "swiss", "urban_rural", "urban_suburban", "urban_urban") 
+columns_to_summarize <- c("BMI", "physician_visits_99", "hospitalisations_99", "mean_BMI_parents", "female", "age", "edu", "wstat_employed", "wstat_unemployed", "wstat_nonworking", "civsta_single", "civsta_married", "civsta_separated", "activity_weekly", "newborn", "sleep", "swiss", "urban_rural", "urban_suburban", "urban_urban") 
 
 # Create the data frame
 descriptive_stats <- data.frame(
@@ -528,27 +528,30 @@ print.xtable(table_object, file = "table_descr_stats.tex")
 
 # First stage results independent of the exclusion of outliers
 # Extract first stage results without control variables
-iv_first_stage_uncontrolled = lm_robust(BMI ~ mean_bmi_parents, fixed_effects = ~ canton + year, data = combined_data)
+iv_first_stage_uncontrolled = lm_robust(BMI ~ mean_BMI_parents, fixed_effects = ~ canton + year, data = combined_data)
 summary(iv_first_stage_uncontrolled)
 
 # Extract first stage results with control variables 
-iv_first_stage = lm_robust(BMI ~ mean_bmi_parents + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + swiss + urban, fixed_effects = ~ canton + year, data = combined_data)
+iv_first_stage = lm_robust(BMI ~ mean_BMI_parents + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + swiss + urban, fixed_effects = ~ canton + year, data = combined_data)
 summary(iv_first_stage)
+
+# First stage R^2 without any control variables (indicator of the relevance of the instrument)
+summary(lm_robust(BMI ~ mean_BMI_parents, data = combined_data))$r.squared
 
 ############################ For physician visits ##############################
 # IV estimation
 # Without control variables
-physician_visits_iv_uncontrolled <- iv_robust(physician_visits ~ BMI | mean_bmi_parents, data = combined_data %>% filter(physician_visits <= quantile(physician_visits, 0.99)), fixed_effects = ~ canton + year)
+physician_visits_iv_uncontrolled <- iv_robust(physician_visits ~ BMI | mean_BMI_parents, data = combined_data %>% filter(physician_visits <= quantile(physician_visits, 0.99)), fixed_effects = ~ canton + year)
 summary(physician_visits_iv_uncontrolled)
 # Extract first stage results
-physician_visits_iv_first_stage_uncontrolled = lm_robust(BMI ~ mean_bmi_parents, fixed_effects = ~ canton + year, data = combined_data %>% filter(physician_visits <= quantile(physician_visits, 0.99)))
+physician_visits_iv_first_stage_uncontrolled = lm_robust(BMI ~ mean_BMI_parents, fixed_effects = ~ canton + year, data = combined_data %>% filter(physician_visits <= quantile(physician_visits, 0.99)))
 summary(physician_visits_iv_first_stage_uncontrolled)
 
 # With control variables
-physician_visits_iv <- iv_robust(physician_visits ~ BMI + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + swiss + urban | mean_bmi_parents + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + swiss + urban, data = combined_data %>% filter(physician_visits <= quantile(physician_visits, 0.99)), fixed_effects = ~ canton + year)
+physician_visits_iv <- iv_robust(physician_visits ~ BMI + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + swiss + urban | mean_BMI_parents + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + swiss + urban, data = combined_data %>% filter(physician_visits <= quantile(physician_visits, 0.99)), fixed_effects = ~ canton + year)
 summary(physician_visits_iv)
 # Extract first stage results
-physician_visits_iv_first_stage = lm_robust(BMI ~ mean_bmi_parents + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + swiss + urban, fixed_effects = ~ canton + year, data = combined_data %>% filter(physician_visits <= quantile(physician_visits, 0.99)))
+physician_visits_iv_first_stage = lm_robust(BMI ~ mean_BMI_parents + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + swiss + urban, fixed_effects = ~ canton + year, data = combined_data %>% filter(physician_visits <= quantile(physician_visits, 0.99)))
 summary(physician_visits_iv_first_stage)
 
 ### Perform analogue to Breusch-Pagan test to find out, whether adjusting for heteroskedasticity is necessary
@@ -560,7 +563,7 @@ breusch_pagan_physician_visits <- cbind(combined_data_physician_visits, fitteds_
 # Add the squared residuals to the dataset
 breusch_pagan_physician_visits["squared_residuals_2sls"] <- (breusch_pagan_physician_visits$fitteds_secondstage_physician_visits - breusch_pagan_physician_visits$physician_visits)^2
 # Conduct the statistical test
-breusch_pagan__physician_visits_test <- lm(squared_residuals_2sls ~ mean_bmi_parents + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + swiss + urban + canton + year, data = breusch_pagan_physician_visits)
+breusch_pagan__physician_visits_test <- lm(squared_residuals_2sls ~ mean_BMI_parents + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + swiss + urban + canton + year, data = breusch_pagan_physician_visits)
 summary(breusch_pagan__physician_visits_test) # As the p-value of the F-statistic is below 0.05 with 9.828e-09, I will use robust standard errors.
 
 # OLS estimation
@@ -577,10 +580,10 @@ summary(hausman_physician_visits_test) # Yes, the differences are statistically 
 
 # With control for comorbidities
 # IV estimation
-physician_visits_iv_w_comorbidities <- iv_robust(physician_visits ~ BMI + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + backpain + headache + chronic + swiss + urban | mean_bmi_parents + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + backpain + headache + chronic + swiss + urban, data = combined_data %>% filter(physician_visits <= quantile(physician_visits, 0.99)), fixed_effects = ~ canton + year)
+physician_visits_iv_w_comorbidities <- iv_robust(physician_visits ~ BMI + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + backpain + headache + chronic + swiss + urban | mean_BMI_parents + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + backpain + headache + chronic + swiss + urban, data = combined_data %>% filter(physician_visits <= quantile(physician_visits, 0.99)), fixed_effects = ~ canton + year)
 summary(physician_visits_iv_w_comorbidities)
 # Extract first stage results
-physician_visits_iv_first_stage_w_comorbidities = lm_robust(BMI ~ mean_bmi_parents + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + backpain + headache + chronic + swiss + urban, fixed_effects = ~ canton + year, data = combined_data %>% filter(physician_visits <= quantile(physician_visits, 0.99)))
+physician_visits_iv_first_stage_w_comorbidities = lm_robust(BMI ~ mean_BMI_parents + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + backpain + headache + chronic + swiss + urban, fixed_effects = ~ canton + year, data = combined_data %>% filter(physician_visits <= quantile(physician_visits, 0.99)))
 summary(physician_visits_iv_first_stage_w_comorbidities)
 
 # OLS estimation
@@ -588,27 +591,27 @@ physician_visits_ols_w_comorbidities <- lm_robust(physician_visits ~ BMI + femal
 summary(physician_visits_ols_w_comorbidities)
 
 # IV estimation without exclusion of outliers
-physician_visits_iv_no_exclusion <- iv_robust(physician_visits ~ BMI + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + swiss + urban | mean_bmi_parents + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + swiss + urban, data = combined_data, fixed_effects = ~ canton + year)
+physician_visits_iv_no_exclusion <- iv_robust(physician_visits ~ BMI + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + swiss + urban | mean_BMI_parents + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + swiss + urban, data = combined_data, fixed_effects = ~ canton + year)
 summary(physician_visits_iv_no_exclusion)
 
 # IV estimation with exclusion of the highest 5%
-physician_visits_iv_5_exclusion <- iv_robust(physician_visits ~ BMI + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + swiss + urban | mean_bmi_parents + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + swiss + urban, data = combined_data %>% filter(physician_visits <= quantile(physician_visits, 0.95)), fixed_effects = ~ canton + year)
+physician_visits_iv_5_exclusion <- iv_robust(physician_visits ~ BMI + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + swiss + urban | mean_BMI_parents + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + swiss + urban, data = combined_data %>% filter(physician_visits <= quantile(physician_visits, 0.95)), fixed_effects = ~ canton + year)
 summary(physician_visits_iv_5_exclusion)
 
 ############################ For hospitalisations ##############################
 # IV estimation
 # Without control variables
-hospitalisations_iv_uncontrolled <- iv_robust(hospitalisations ~ BMI | mean_bmi_parents, data = combined_data %>% filter(hospitalisations <= quantile(hospitalisations, 0.99)), fixed_effects = ~ canton + year)
+hospitalisations_iv_uncontrolled <- iv_robust(hospitalisations ~ BMI | mean_BMI_parents, data = combined_data %>% filter(hospitalisations <= quantile(hospitalisations, 0.99)), fixed_effects = ~ canton + year)
 summary(hospitalisations_iv_uncontrolled)
 # Extract first stage results
-hospitalisations_iv_first_stage_uncontrolled = lm_robust(BMI ~ mean_bmi_parents, fixed_effects = ~ canton + year, data = combined_data %>% filter(hospitalisations <= quantile(hospitalisations, 0.99)))
+hospitalisations_iv_first_stage_uncontrolled = lm_robust(BMI ~ mean_BMI_parents, fixed_effects = ~ canton + year, data = combined_data %>% filter(hospitalisations <= quantile(hospitalisations, 0.99)))
 summary(hospitalisations_iv_first_stage_uncontrolled)
 
 # With control variables
-hospitalisations_iv <- iv_robust(hospitalisations ~ BMI + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + swiss + urban | mean_bmi_parents + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + swiss + urban, data = combined_data %>% filter(hospitalisations <= quantile(hospitalisations, 0.99)), fixed_effects = ~ canton + year)
+hospitalisations_iv <- iv_robust(hospitalisations ~ BMI + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + swiss + urban | mean_BMI_parents + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + swiss + urban, data = combined_data %>% filter(hospitalisations <= quantile(hospitalisations, 0.99)), fixed_effects = ~ canton + year)
 summary(hospitalisations_iv)
 # Extract first stage results 
-hospitalisations_iv_first_stage = lm_robust(BMI ~ mean_bmi_parents + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + swiss + urban, fixed_effects = ~ canton + year, data = combined_data %>% filter(hospitalisations <= quantile(hospitalisations, 0.99)))
+hospitalisations_iv_first_stage = lm_robust(BMI ~ mean_BMI_parents + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + swiss + urban, fixed_effects = ~ canton + year, data = combined_data %>% filter(hospitalisations <= quantile(hospitalisations, 0.99)))
 summary(hospitalisations_iv_first_stage)
 
 ### Perform analogue to Breusch-Pagan test to find out, whether adjusting for heteroskedasticity is necessary
@@ -620,7 +623,7 @@ breusch_pagan_hospitalisations <- cbind(combined_data_hospitalisations, fitteds_
 # Add the squared residuals to the dataset
 breusch_pagan_hospitalisations["squared_residuals_2sls"] <- (breusch_pagan_hospitalisations$fitteds_secondstage_hospitalisations - breusch_pagan_hospitalisations$hospitalisations)^2
 # Conduct the statistical test
-breusch_pagan_hospitalisations_test <- lm(squared_residuals_2sls ~ mean_bmi_parents + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + swiss + urban + canton + year, data = breusch_pagan_hospitalisations)
+breusch_pagan_hospitalisations_test <- lm(squared_residuals_2sls ~ mean_BMI_parents + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + swiss + urban + canton + year, data = breusch_pagan_hospitalisations)
 summary(breusch_pagan_hospitalisations_test) # As the p-value of the F-statistic is below 0.05 with 5.164e-05, I will use robust standard errors.
 
 # OLS estimation
@@ -637,10 +640,10 @@ summary(hausman_hospitalisations_test) # The differences are only significant at
 
 # With control for comorbidities
 # IV estimation
-hospitalisations_iv_w_comorbidities <- iv_robust(hospitalisations ~ BMI + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + backpain + headache + chronic + swiss + urban | mean_bmi_parents + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + backpain + headache + chronic + swiss + urban, data = combined_data %>% filter(hospitalisations <= quantile(hospitalisations, 0.99)), fixed_effects = ~ canton + year)
+hospitalisations_iv_w_comorbidities <- iv_robust(hospitalisations ~ BMI + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + backpain + headache + chronic + swiss + urban | mean_BMI_parents + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + backpain + headache + chronic + swiss + urban, data = combined_data %>% filter(hospitalisations <= quantile(hospitalisations, 0.99)), fixed_effects = ~ canton + year)
 summary(hospitalisations_iv_w_comorbidities)
 # Extract first stage results
-hospitalisations_iv_first_stage_w_comorbidities = lm_robust(BMI ~ mean_bmi_parents + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + backpain + headache + chronic + swiss + urban, fixed_effects = ~ canton + year, data = combined_data %>% filter(hospitalisations <= quantile(hospitalisations, 0.99)))
+hospitalisations_iv_first_stage_w_comorbidities = lm_robust(BMI ~ mean_BMI_parents + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + backpain + headache + chronic + swiss + urban, fixed_effects = ~ canton + year, data = combined_data %>% filter(hospitalisations <= quantile(hospitalisations, 0.99)))
 summary(hospitalisations_iv_first_stage_w_comorbidities)
 
 # OLS estimation
@@ -648,11 +651,11 @@ hospitalisations_ols_w_comorbidities <- lm_robust(hospitalisations ~ BMI + femal
 summary(hospitalisations_ols_w_comorbidities)
 
 # IV estimation without exclusion of outliers
-hospitalisations_iv_no_exclusion <- iv_robust(hospitalisations ~ BMI + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + swiss + urban | mean_bmi_parents + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + swiss + urban, data = combined_data, fixed_effects = ~ canton + year)
+hospitalisations_iv_no_exclusion <- iv_robust(hospitalisations ~ BMI + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + swiss + urban | mean_BMI_parents + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + swiss + urban, data = combined_data, fixed_effects = ~ canton + year)
 summary(hospitalisations_iv_no_exclusion)
 
 # IV estimation with exclusion of the highest 5%
-hospitalisations_iv_5_exclusion <- iv_robust(hospitalisations ~ BMI + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + swiss + urban | mean_bmi_parents + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + swiss + urban, data = combined_data %>% filter(hospitalisations <= quantile(hospitalisations, 0.95)), fixed_effects = ~ canton + year)
+hospitalisations_iv_5_exclusion <- iv_robust(hospitalisations ~ BMI + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + swiss + urban | mean_BMI_parents + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + swiss + urban, data = combined_data %>% filter(hospitalisations <= quantile(hospitalisations, 0.95)), fixed_effects = ~ canton + year)
 summary(hospitalisations_iv_5_exclusion)
 
 ####### Robustness check with different obesity definition for children ########
@@ -674,11 +677,11 @@ combined_data$BMI_adjusted[combined_data$female == 0 & combined_data$age == 16] 
 combined_data$BMI_adjusted[combined_data$female == 0 & combined_data$age == 17] <- combined_data$BMI_adjusted[combined_data$female == 0 & combined_data$age == 17] * 0.897
 
 # With control variables
-physician_visits_iv_adjustedBMI <- iv_robust(physician_visits ~ BMI_adjusted + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + swiss + urban | mean_bmi_parents + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + swiss + urban, data = combined_data %>% filter(physician_visits <= quantile(physician_visits, 0.99)), fixed_effects = ~ canton + year)
+physician_visits_iv_adjustedBMI <- iv_robust(physician_visits ~ BMI_adjusted + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + swiss + urban | mean_BMI_parents + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + swiss + urban, data = combined_data %>% filter(physician_visits <= quantile(physician_visits, 0.99)), fixed_effects = ~ canton + year)
 summary(physician_visits_iv_adjustedBMI)
 
 # With control variables
-hospitalisations_iv_adjustedBMI <- iv_robust(hospitalisations ~ BMI_adjusted + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + swiss + urban | mean_bmi_parents + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + swiss + urban, data = combined_data %>% filter(hospitalisations <= quantile(hospitalisations, 0.99)), fixed_effects = ~ canton + year)
+hospitalisations_iv_adjustedBMI <- iv_robust(hospitalisations ~ BMI_adjusted + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + swiss + urban | mean_BMI_parents + female + age + edu + wstat + civsta + activity_weekly + newborn + sleep + swiss + urban, data = combined_data %>% filter(hospitalisations <= quantile(hospitalisations, 0.99)), fixed_effects = ~ canton + year)
 summary(hospitalisations_iv_adjustedBMI)
 
 ################################################################################
@@ -712,17 +715,17 @@ dag_wo_iv <- ggdag_status(dag_wo_iv,
                      text = FALSE, stylized = TRUE,
                      check_overlap = FALSE) +
   guides(fill = FALSE, color = FALSE) + # Disable the legend
-  geom_richtext(x=0,y=0,hjust=0,vjust=0.5,label="_**health care use**_<br>physician visits<br>hospitalisations",size=3,
+  geom_richtext(x=0,y=0,hjust=0,vjust=0.5,label="_**Healthcare Use**_<br>Physician Visits<br>Hospitalisations",size=3,
                 label.padding = unit(c(0.25,0.25,0.25,0.25), "lines"), label.color = "black", color = "black") +
   geom_richtext(x=-2,y=0,hjust=1,vjust=0.5,label="BMI",size=3,
                 label.padding = unit(c(0.25,0.25,0.25,0.25), "lines"), label.color = "black", color = "black") +
-  geom_richtext(x=-2.05,y=-1.5,hjust=1,vjust=0.2,label="_**unobserved confounders**_<br>smoker<br>time preferences",size=3,
+  geom_richtext(x=-2.05,y=-1.5,hjust=1,vjust=0.2,label="_**Unobserved Confounders**_<br>Smoker<br>Time Preferences",size=3,
                 label.padding = unit(c(0.25,0.25,0.25,0.25), "lines"), label.color = "black", color = "black") +
-  geom_richtext(x=0,y=-1.5,hjust=0,vjust=0.9,label="_**observed confounders**_<br>gender<br>age<br>education<br>working status<br>civil status<br>physical activity<br>newborn child<br>sleeping problems<br>nationality<br>degree of urbanisation",size=3,
+  geom_richtext(x=0,y=-1.5,hjust=0,vjust=0.9,label="_**Observed Confounders**_<br>Gender<br>Age<br>Education<br>Working Status<br>Civil Status<br>Physical Activity<br>Newborn Child<br>Sleeping Problems<br>Nationality<br>Degree of Urbanisation",size=3,
                 label.padding = unit(c(0.25,0.25,0.25,0.25), "lines"), label.color = "black", color = "black") +
-  geom_richtext(x=-1,y=1.5,hjust=1,vjust=0.2,label="_**comorbidities**_<br>chronic health problems<br>back pain<br>headache",size=3,
+  geom_richtext(x=-1,y=1.5,hjust=1,vjust=0.2,label="_**Comorbidities**_<br>Chronic Health Problems<br>Back Pain<br>Headache",size=3,
                 label.padding = unit(c(0.25,0.25,0.25,0.25), "lines"), label.color = "black", color = "black") +
-  geom_richtext(x=0,y=1.5,hjust=0,vjust=0.5,label="genetic predisposition<br>for diseases",size=3,
+  geom_richtext(x=0,y=1.5,hjust=0,vjust=0.5,label="Genetic Predisposition<br>for Diseases",size=3,
                 label.padding = unit(c(0.25,0.25,0.25,0.25), "lines"), label.color = "black", color = "black") +
   xlim(x_limits_wo_iv) +
   ylim(y_limits_wo_iv) +
@@ -758,19 +761,19 @@ dag_w_iv <- ggdag_status(dag_w_iv,
                      text = FALSE, stylized = TRUE,
                      check_overlap = FALSE) +
   guides(fill = FALSE, color = FALSE) + # Disable the legend
-  geom_richtext(x=0,y=0,hjust=0,vjust=0.5,label="_**health care use**_<br>physician visits<br>hospitalisations",size=3,
+  geom_richtext(x=0,y=0,hjust=0,vjust=0.5,label="_**Healthcare Use**_<br>Physician Visits<br>Hospitalisations",size=3,
                 label.padding = unit(c(0.25,0.25,0.25,0.25), "lines"), label.color = "black", color = "black") +
   geom_richtext(x=-2,y=0,hjust=1,vjust=0.5,label="BMI",size=3,
                 label.padding = unit(c(0.25,0.25,0.25,0.25), "lines"), label.color = "black", color = "black") +
-  geom_richtext(x=-2.05,y=-1.5,hjust=0,vjust=1.1,label="_**unobserved confounders**_<br>smoker<br>time preferences",size=3,
+  geom_richtext(x=-2.05,y=-1.5,hjust=0,vjust=1.1,label="_**Unobserved Confounders**_<br>Smoker<br>Time Preferences",size=3,
                 label.padding = unit(c(0.25,0.25,0.25,0.25), "lines"), label.color = "black", color = "black") +
-  geom_richtext(x=0,y=-1.5,hjust=0,vjust=0.9,label="_**observed confounders**_<br>gender<br>age<br>education<br>working status<br>civil status<br>physical activity<br>newborn child<br>sleeping problems<br>nationality<br>degree of urbanisation",size=3,
+  geom_richtext(x=0,y=-1.5,hjust=0,vjust=0.9,label="_**Observed Confounders**_<br>Gender<br>Age<br>Education<br>Working Status<br>Civil Status<br>Physical Activity<br>Newborn Child<br>Sleeping Problems<br>Nationality<br>Degree of Urbanisation",size=3,
                 label.padding = unit(c(0.25,0.25,0.25,0.25), "lines"), label.color = "black", color = "black") +
-  geom_richtext(x=-1,y=1.5,hjust=1,vjust=0.2,label="_**comorbidities**_<br>chronic health problems<br>back pain<br>headache",size=3,
+  geom_richtext(x=-1,y=1.5,hjust=1,vjust=0.2,label="_**Comorbidities**_<br>Chronic Health Problems<br>Back Pain<br>Headache",size=3,
                 label.padding = unit(c(0.25,0.25,0.25,0.25), "lines"), label.color = "black", color = "black") +
-  geom_richtext(x=-2.8,y=-1.5,hjust=1,vjust=0.5,label="mean BMI parents",size=3,
+  geom_richtext(x=-2.8,y=-1.5,hjust=1,vjust=0.5,label="Mean BMI Parents",size=3,
                 label.padding = unit(c(0.25,0.25,0.25,0.25), "lines"), label.color = "black", color = "black") +
-  geom_richtext(x=0,y=1.5,hjust=0,vjust=0.5,label="genetic predisposition<br>for diseases",size=3,
+  geom_richtext(x=0,y=1.5,hjust=0,vjust=0.5,label="Genetic Predisposition<br>for Diseases",size=3,
                 label.padding = unit(c(0.25,0.25,0.25,0.25), "lines"), label.color = "black", color = "black") +
   xlim(x_limits_w_iv) +
   ylim(y_limits_w_iv) +
@@ -780,7 +783,7 @@ dag_w_iv <- ggdag_status(dag_w_iv,
 dag_w_iv
 
 ################################################################################
-##      Code for the FSO data on the cost of medical services in 2019         ##                      
+##      Code for the FSO data on the cost of medical services in 2019         ##                      ##
 ################################################################################
 
 # Load the data set
