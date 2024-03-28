@@ -3,7 +3,7 @@
 Welcome to the GitHub repository for the R script corresponding to my Bachelor thesis at the Faculty of Business, Economics and Social Sciences at the University of Bern.
 
 **Thesis Title:**
-"Obesity and Health Care Utilisation: An Empirical Analysis of the Swiss Household Panel between 2004 and 2019."
+"Obesity and Health Care Utilisation: An Empirical Analysis of the Swiss Household Panel Between 2004 and 2019."
 
 ## Project Overview
 
