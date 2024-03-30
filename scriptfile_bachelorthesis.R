@@ -725,7 +725,7 @@ dag_wo_iv <- ggdag_status(dag_wo_iv,
                 label.padding = unit(c(0.25,0.25,0.25,0.25), "lines"), label.color = "black", color = "black") +
   geom_richtext(x=-1,y=1.5,hjust=1,vjust=0.2,label="_**Comorbidities**_<br>Chronic Health Problems<br>Back Pain<br>Headache",size=3,
                 label.padding = unit(c(0.25,0.25,0.25,0.25), "lines"), label.color = "black", color = "black") +
-  geom_richtext(x=0,y=1.5,hjust=0,vjust=0.5,label="Genetic Predisposition<br>for Diseases",size=3,
+  geom_richtext(x=0,y=1.5,hjust=0,vjust=0.5,label="Genetic Predisposition<br>to Diseases",size=3,
                 label.padding = unit(c(0.25,0.25,0.25,0.25), "lines"), label.color = "black", color = "black") +
   xlim(x_limits_wo_iv) +
   ylim(y_limits_wo_iv) +
@@ -773,7 +773,7 @@ dag_w_iv <- ggdag_status(dag_w_iv,
                 label.padding = unit(c(0.25,0.25,0.25,0.25), "lines"), label.color = "black", color = "black") +
   geom_richtext(x=-2.8,y=-1.5,hjust=1,vjust=0.5,label="Mean BMI Parents",size=3,
                 label.padding = unit(c(0.25,0.25,0.25,0.25), "lines"), label.color = "black", color = "black") +
-  geom_richtext(x=0,y=1.5,hjust=0,vjust=0.5,label="Genetic Predisposition<br>for Diseases",size=3,
+  geom_richtext(x=0,y=1.5,hjust=0,vjust=0.5,label="Genetic Predisposition<br>to Diseases",size=3,
                 label.padding = unit(c(0.25,0.25,0.25,0.25), "lines"), label.color = "black", color = "black") +
   xlim(x_limits_w_iv) +
   ylim(y_limits_w_iv) +
